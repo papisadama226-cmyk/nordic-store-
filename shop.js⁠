@@ -2,7 +2,7 @@ const PRICE_PER_ARTICLE = 10000;
 const ADMIN_PHONE = "0702797128";
 let cart = [];
 
-// Protection : On s'assure que le client a entré son nom avant d'accéder au shop
+// Sécurité : Vérifier que le client est bien passé par la page d'accueil
 window.addEventListener('DOMContentLoaded', () => {
     const name = localStorage.getItem('nordic_user_name');
     if (!name) {
@@ -10,10 +10,15 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+// Ouvrir / Fermer le panier coulissant
 function toggleCart() {
-    document.getElementById('cartSidebar').classList.toggle('active');
+    const sidebar = document.getElementById('cartSidebar');
+    if (sidebar) {
+        sidebar.classList.toggle('active');
+    }
 }
 
+// Ajouter un t-shirt au panier
 function addToCart(productName) {
     const existing = cart.find(item => item.name === productName);
     if (existing) {
@@ -24,17 +29,18 @@ function addToCart(productName) {
     updateCartUI();
 }
 
+// Mettre à jour l'affichage dynamique du panier
 function updateCartUI() {
     const cartCount = document.getElementById('cartCount');
     const cartItems = document.getElementById('cartItems');
     const cartTotal = document.getElementById('cartTotal');
     
     const totalCount = cart.reduce((sum, item) => sum + item.quantity, 0);
-    cartCount.textContent = totalCount;
+    if (cartCount) cartCount.textContent = totalCount;
     
     if (cart.length === 0) {
-        cartItems.innerHTML = '<p class="empty-msg">Votre panier est vide.</p>';
-        cartTotal.textContent = "0 FCFA";
+        if (cartItems) cartItems.innerHTML = '<p class="empty-msg">Votre panier est vide.</p>';
+        if (cartTotal) cartTotal.textContent = "0 FCFA";
         return;
     }
     
@@ -55,15 +61,17 @@ function updateCartUI() {
         `;
     });
     
-    cartItems.innerHTML = html;
-    cartTotal.textContent = `${totalAmount.toLocaleString('fr-FR')} FCFA`;
+    if (cartItems) cartItems.innerHTML = html;
+    if (cartTotal) cartTotal.textContent = `${totalAmount.toLocaleString('fr-FR')} FCFA`;
 }
 
+// Supprimer un article
 function removeFromCart(index) {
     cart.splice(index, 1);
     updateCartUI();
 }
 
+// Finaliser la commande et envoyer la facture sur le WhatsApp de l'admin
 function validateCheckout() {
     if (cart.length === 0) {
         alert("Votre panier est vide !");
@@ -76,7 +84,7 @@ function validateCheckout() {
     const clientPhone = localStorage.getItem('nordic_user_phone') || "Non spécifié";
     
     if (!delivery) {
-        alert("Veuillez indiquer un lieu de livraison.");
+        alert("Veuillez indiquer un lieu de livraison (Commune / Quartier).");
         return;
     }
     
