@@ -59,7 +59,7 @@
             <img src="varsity.png" alt="Varsity Block" class="product-img">
             <h3>T-Shirt Varsity Block</h3>
             <p>Style Universitaire Américain Imposant</p>
-            <button class="add-to-cart-btn" onclick="addCart('T-Shirt Varsity Block')">Ajouter au Panier</button>
+            <button class="add-to-cart-btn" onclick="addToCart('T-Shirt Varsity Block')">Ajouter au Panier</button>
         </div>
 
         <div class="product-card">
