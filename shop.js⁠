@@ -1,0 +1,104 @@
+const PRICE_PER_ARTICLE = 10000;
+const ADMIN_PHONE = "0702797128";
+let cart = [];
+
+// Protection : On s'assure que le client a entré son nom avant d'accéder au shop
+window.addEventListener('DOMContentLoaded', () => {
+    const name = localStorage.getItem('nordic_user_name');
+    if (!name) {
+        window.location.href = "index.html";
+    }
+});
+
+function toggleCart() {
+    document.getElementById('cartSidebar').classList.toggle('active');
+}
+
+function addToCart(productName) {
+    const existing = cart.find(item => item.name === productName);
+    if (existing) {
+        existing.quantity += 1;
+    } else {
+        cart.push({ name: productName, quantity: 1 });
+    }
+    updateCartUI();
+}
+
+function updateCartUI() {
+    const cartCount = document.getElementById('cartCount');
+    const cartItems = document.getElementById('cartItems');
+    const cartTotal = document.getElementById('cartTotal');
+    
+    const totalCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+    cartCount.textContent = totalCount;
+    
+    if (cart.length === 0) {
+        cartItems.innerHTML = '<p class="empty-msg">Votre panier est vide.</p>';
+        cartTotal.textContent = "0 FCFA";
+        return;
+    }
+    
+    let html = "";
+    let totalAmount = 0;
+    
+    cart.forEach((item, index) => {
+        const cost = item.quantity * PRICE_PER_ARTICLE;
+        totalAmount += cost;
+        html += `
+            <div class="cart-item">
+                <div>
+                    <h4>${item.name}</h4>
+                    <p>${PRICE_PER_ARTICLE.toLocaleString('fr-FR')} x ${item.quantity}</p>
+                </div>
+                <button class="remove-item-btn" onclick="removeFromCart(${index})">✕</button>
+            </div>
+        `;
+    });
+    
+    cartItems.innerHTML = html;
+    cartTotal.textContent = `${totalAmount.toLocaleString('fr-FR')} FCFA`;
+}
+
+function removeFromCart(index) {
+    cart.splice(index, 1);
+    updateCartUI();
+}
+
+function validateCheckout() {
+    if (cart.length === 0) {
+        alert("Votre panier est vide !");
+        return;
+    }
+    
+    const delivery = document.getElementById('deliveryLocation').value.trim();
+    const payment = document.getElementById('payMethod').value;
+    const clientName = localStorage.getItem('nordic_user_name') || "Client NORDIC";
+    const clientPhone = localStorage.getItem('nordic_user_phone') || "Non spécifié";
+    
+    if (!delivery) {
+        alert("Veuillez indiquer un lieu de livraison.");
+        return;
+    }
+    
+    let text = `*NOUVELLE COMMANDE NØRD!C 🇨🇮*\n`;
+    text += `=========================\n`;
+    text += `👤 *Client :* ${clientName}\n`;
+    text += `📞 *Contact :* ${clientPhone}\n`;
+    text += `📍 *Livraison :* ${delivery}\n`;
+    text += `💳 *Paiement :* ${payment}\n`;
+    text += `=========================\n`;
+    text += `🛒 *Articles commandés :*\n`;
+    
+    let total = 0;
+    cart.forEach(item => {
+        const cost = item.quantity * PRICE_PER_ARTICLE;
+        total += cost;
+        text += `- ${item.name} (x${item.quantity}) : ${cost.toLocaleString('fr-FR')} FCFA\n`;
+    });
+    
+    text += `=========================\n`;
+    text += `💰 *TOTAL À PAYER : ${total.toLocaleString('fr-FR')} FCFA*\n\n`;
+    text += `Merci de valider ma commande !`;
+    
+    window.location.href = `https://wa.me/225${ADMIN_PHONE}?text=${encodeURIComponent(text)}`;
+}
