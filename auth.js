@@ -12,14 +12,14 @@ window.addEventListener('DOMContentLoaded', () => {
         const phone = document.getElementById('clientPhone').value.trim();
         const code = document.getElementById('accessCode').value.trim();
 
-        // Stockage local des infos utilisateur pour la commande
+        // Sauvegarde immédiate des infos pour la boutique
         localStorage.setItem('nordic_user_name', name);
         localStorage.setItem('nordic_user_phone', phone);
 
         const messageWhatsApp = `Salut NORDIC ! Je souhaite rejoindre le site de vente privé.\n👤 Nom: ${name}\n📞 Numéro: ${phone}\nPeux-tu me donner le code d'accès ?`;
         const urlWhatsApp = `https://wa.me/225${ADMIN_PHONE}?text=${encodeURIComponent(messageWhatsApp)}`;
 
-        // Si le code VIP secret est entré, on passe direct à la boutique
+        // Si le code VIP est bon, on va direct à la boutique sans attendre
         if (code.toLowerCase() === "nordic2026") {
             window.location.href = "shop.html";
             return;
@@ -36,16 +36,22 @@ window.addEventListener('DOMContentLoaded', () => {
             }]
         };
 
-        // Envoi Discord avec filet de sécurité anti-crash
+        // Envoi Discord avec filet de sécurité anti-blocage
         try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 2000); // 2 secondes max
+
             await fetch(ADMIN_WEBHOOK_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(discordPayload)
+                body: JSON.stringify(discordPayload),
+                signal: controller.signal
             });
+            
+            clearTimeout(timeoutId);
             window.location.href = urlWhatsApp;
         } catch (error) {
-            // Si le réseau mobile coupe ou bloque Discord, on force la bascule sur WhatsApp
+            // Si Discord bugue ou coupe, redirection forcée immédiate
             window.location.href = urlWhatsApp;
         }
     });
